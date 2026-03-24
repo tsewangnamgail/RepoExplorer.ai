@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # **RepoExplorer.ai**
 
 **RepoExplorer.ai** is an **Agentic RAG-powered GitHub repository explorer** that helps developers understand any public repository using natural language questions. Instead of manually reading multiple files, users can ask questions about the code and instantly receive explanations, relevant functions, and project insights.

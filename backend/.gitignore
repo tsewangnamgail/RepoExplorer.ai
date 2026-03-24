@@ -1,0 +1,21 @@
+# Python environment
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local secrets
+.env
+
+# Local data (RepoExplorer.ai)
+chroma_db/
+cloned_repos/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store

@@ -10,6 +10,8 @@ import { RepoOverview } from "@/components/RepoOverview";
 import { ChatHistory } from "@/components/ChatHistory";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
 import { MOCK_REPO_INFO } from "@/lib/types";
+import { ingestRepo, queryRepo } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const MOCK_RESPONSE = `This repository is a **React-based UI library** that provides a comprehensive set of components for building modern web applications.
 
@@ -37,17 +39,39 @@ export default function HomePage() {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [repoId, setRepoId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleRepoSubmit = (url: string) => {
-    setRepoLoaded(true);
-    setMessages([]);
+  const handleRepoSubmit = async (url: string) => {
+    setIsTyping(true);
+    try {
+      const result = await ingestRepo(url);
+      setRepoId(result.repo_id);
+      setRepoLoaded(true);
+      setMessages([{
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: `Successfully ingested **${result.repo_id}**. You can now ask any questions about the codebase.`,
+          timestamp: new Date(),
+      }]);
+    } catch (e: any) {
+      toast({
+        title: "Ingestion Failed",
+        description: e.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsTyping(false);
+    }
   };
 
-  const handleSend = (content: string) => {
+  const handleSend = async (content: string) => {
+    if (!repoId) return;
+
     const userMsg: ChatMessageType = {
       id: crypto.randomUUID(),
       role: "user",
@@ -57,18 +81,25 @@ export default function HomePage() {
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const result = await queryRepo(repoId, content);
       const aiMsg: ChatMessageType = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: MOCK_RESPONSE,
-        sourceFiles: ["src/App.tsx", "src/main.tsx", "package.json"],
+        content: result.answer,
+        sourceFiles: result.sources,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (e: any) {
+      toast({
+        title: "Query Failed",
+        description: e.message,
+        variant: "destructive",
+      });
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   if (!repoLoaded) {

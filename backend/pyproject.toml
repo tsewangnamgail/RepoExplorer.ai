@@ -1,0 +1,32 @@
+[project]
+name = "repoexplorer-backend"
+version = "0.1.0"
+description = "Agentic RAG-powered GitHub repository explorer"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "langchain",
+    "langgraph",
+    "chromadb",
+    "sentence-transformers",
+    "langchain-groq",
+    "langchain-chroma",
+    "langchain-text-splitters",
+    "groq",
+    "gitpython",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "onnxruntime==1.16.3",
+    "torch==2.2.2",
+    "numpy<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
